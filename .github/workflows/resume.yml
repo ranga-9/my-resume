@@ -30,40 +30,40 @@ jobs:
         with:
           theme: macchiato
           resume_filepath: resume.json
-          output_filepath: docs/index.html
+          output_filepath: index.html   # root-level
 
-      - name: Add .nojekyll
+      - name: Add _config.yml
         run: |
-          mkdir -p docs
-          echo "" > docs/.nojekyll
-          echo ".nojekyll created."
+          echo "title: My Resume" > _config.yml
+          echo "description: Resume site" >> _config.yml
+          echo "theme: minima" >> _config.yml
+          echo "exclude:" >> _config.yml
+          echo "  - resume.json" >> _config.yml
+          echo "  - .github" >> _config.yml
+          echo "  - node_modules" >> _config.yml
+          echo "  - package.json" >> _config.yml
+          echo "  - package-lock.json" >> _config.yml
+          echo "_config.yml created."
 
-      - name: Debug docs folder
+      - name: Debug generated files
         run: |
-          echo "Listing files inside docs/ after generation:"
-          ls -la docs || echo "docs folder not found"
+          echo "Listing root folder after generation:"
+          ls -la
           echo "Preview of index.html:"
-          head -n 20 docs/index.html || echo "index.html missing"
-          echo "Checking .nojekyll file:"
-          cat docs/.nojekyll || echo ".nojekyll missing"
+          head -n 20 index.html || echo "index.html missing"
+          echo "Preview of _config.yml:"
+          cat _config.yml
 
       - name: Commit built resume
         run: |
           echo "Staging files..."
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add -A docs/
+          git add index.html _config.yml
           echo "Git status after staging:"
           git status
           echo "Attempting commit..."
           git commit -m "[ci skip] Update resume HTML" || echo "No changes to commit"
-
-      - name: Show repo tree after commit
-        run: |
-          echo "Repo contents after commit:"
-          ls -la
-          echo "Docs folder contents (from repo working dir):"
-          ls -la docs || echo "docs folder not found"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
