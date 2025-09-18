@@ -1,0 +1,36 @@
+name: Publish Resume
+
+on:
+  push:
+    branches: [ main ]   # or master, whichever branch you're using
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download resume.json from gist
+        run: |
+          curl -L https://gist.githubusercontent.com/ranga-9/469874b1b4a22c7374c059b19a1cac0a/raw/resume.json -o resume.json
+
+      - name: Generate HTML with jsonresume-export
+        uses: kelvintaywl/action-jsonresume-export@v1
+        with:
+          theme: macchiato
+          resume_filepath: resume.json
+          output_filepath: docs/index.html
+
+      - name: Commit built resume
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/index.html
+          git commit -m "[ci skip] Update resume HTML" || echo "No changes to commit"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main  # or master depending on your repo's default
