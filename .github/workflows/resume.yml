@@ -26,6 +26,10 @@ jobs:
         run: |
           mkdir -p docs
           echo "" > docs/.nojekyll
+      - name: Debug docs folder
+        run: |
+          echo "Listing files inside docs/"
+          ls -la docs || echo "docs folder not found"
 
       - name: Commit built resume
         run: |
