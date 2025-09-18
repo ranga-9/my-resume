@@ -22,11 +22,14 @@ jobs:
           resume_filepath: resume.json
           output_filepath: docs/index.html
 
+      - name: Add .nojekyll
+        run: echo "" > docs/.nojekyll
+
       - name: Commit built resume
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/index.html
+          git add docs/index.html docs/.nojekyll
           git commit -m "[ci skip] Update resume HTML" || echo "No changes to commit"
 
       - name: Push changes
