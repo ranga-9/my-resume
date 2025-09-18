@@ -11,9 +11,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Show repo status before build
+        run: |
+          echo "Repo root contents before build:"
+          ls -la
+          echo "Git status:"
+          git status
+
       - name: Download resume.json from gist
         run: |
+          echo "Downloading resume.json from gist..."
           curl -L https://gist.githubusercontent.com/ranga-9/469874b1b4a22c7374c059b19a1cac0a/raw/resume.json -o resume.json
+          echo "Downloaded resume.json:"
+          head -n 20 resume.json || echo "resume.json not found"
 
       - name: Generate HTML with jsonresume-export
         uses: kelvintaywl/action-jsonresume-export@v1
@@ -26,20 +36,37 @@ jobs:
         run: |
           mkdir -p docs
           echo "" > docs/.nojekyll
+          echo ".nojekyll created."
+
       - name: Debug docs folder
         run: |
-          echo "Listing files inside docs/"
+          echo "Listing files inside docs/ after generation:"
           ls -la docs || echo "docs folder not found"
+          echo "Preview of index.html:"
+          head -n 20 docs/index.html || echo "index.html missing"
+          echo "Checking .nojekyll file:"
+          cat docs/.nojekyll || echo ".nojekyll missing"
 
       - name: Commit built resume
         run: |
+          echo "Staging files..."
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add docs/index.html docs/.nojekyll
+          git add -A docs/
+          echo "Git status after staging:"
+          git status
+          echo "Attempting commit..."
           git commit -m "[ci skip] Update resume HTML" || echo "No changes to commit"
+
+      - name: Show repo tree after commit
+        run: |
+          echo "Repo contents after commit:"
+          ls -la
+          echo "Docs folder contents (from repo working dir):"
+          ls -la docs || echo "docs folder not found"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main  # or master depending on your repo's default
+          branch: main
