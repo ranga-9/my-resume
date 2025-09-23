@@ -1,9 +1,0 @@
-title: My Resume
-description: Resume site
-theme: minima
-exclude:
-  - resume.json
-  - .github
-  - node_modules
-  - package.json
-  - package-lock.json
