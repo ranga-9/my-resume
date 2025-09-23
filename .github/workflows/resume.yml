@@ -36,7 +36,7 @@ jobs:
       # Tech resume
       - name: Download tech resume.json
         run: |
-          curl -L https://gist.githubusercontent.com/ranga-9/3d9618b0fc2c21529d9bb349bc99a64d/raw/resume.json -o resume-tech.json
+          curl -L https://gist.github.com/ranga-9/3d9618b0fc2c21529d9bb349bc99a64d/raw/resume-2.json -o resume-tech.json
           echo "Validating tech resume.json"
           jq . resume-tech.json
 
