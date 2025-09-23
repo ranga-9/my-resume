@@ -1,0 +1,6 @@
+title: My Resumes
+description: Multiple resumes
+theme: minima
+exclude:
+  - resume-*.json
+  - .github
