@@ -1,8 +1,8 @@
-name: Publish Resume
+name: Publish Resumes
 
 on:
   push:
-    branches: [ main ]   # or master, whichever branch you're using
+    branches: [ main ]
 
 jobs:
   build:
@@ -13,59 +13,54 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Show repo status before build
+      # Founder resume
+      - name: Download founder resume.json
         run: |
-          echo "Repo root contents before build:"
-          ls -la
-          echo "Git status:"
-          git status
+          curl -L https://gist.githubusercontent.com/ranga-9/469874b1b4a22c7374c059b19a1cac0a/raw/resume.json -o resume-founder.json
+      - name: Generate Founder Resume
+        uses: kelvintaywl/action-jsonresume-export@v1
+        with:
+          theme: elegant
+          resume_filepath: resume-founder.json
+          output_filepath: founder.html
 
-      - name: Download resume.json from gist
+      # Tech resume
+      - name: Download tech resume.json
         run: |
-          echo "Downloading resume.json from gist..."
-          curl -L https://gist.githubusercontent.com/ranga-9/469874b1b4a22c7374c059b19a1cac0a/raw/resume.json -o resume.json
-          echo "Downloaded resume.json:"
-          head -n 20 resume.json || echo "resume.json not found"
-
-      - name: Generate HTML with jsonresume-export
+          curl -L https://gist.githubusercontent.com/ranga-9/3d9618b0fc2c21529d9bb349bc99a64d/raw/resume.json -o resume-tech.json
+      - name: Generate Tech Resume
         uses: kelvintaywl/action-jsonresume-export@v1
         with:
           theme: macchiato
-          resume_filepath: resume.json
-          output_filepath: index.html   # root-level
+          resume_filepath: resume-tech.json
+          output_filepath: tech.html
 
+      # Homepage linking both resumes
+      - name: Create index.html
+        run: |
+          echo "<!DOCTYPE html><html><head><title>My Resumes</title></head><body>" > index.html
+          echo "<h1>Choose a Resume</h1><ul>" >> index.html
+          echo "<li><a href='founder.html'>Founder Resume</a></li>" >> index.html
+          echo "<li><a href='tech.html'>Tech Resume</a></li>" >> index.html
+          echo "</ul></body></html>" >> index.html
+
+      # Jekyll config
       - name: Add _config.yml
         run: |
-          echo "title: My Resume" > _config.yml
-          echo "description: Resume site" >> _config.yml
+          echo "title: My Resumes" > _config.yml
+          echo "description: Multiple resumes" >> _config.yml
           echo "theme: minima" >> _config.yml
           echo "exclude:" >> _config.yml
-          echo "  - resume.json" >> _config.yml
+          echo "  - resume-*.json" >> _config.yml
           echo "  - .github" >> _config.yml
-          echo "  - node_modules" >> _config.yml
-          echo "  - package.json" >> _config.yml
-          echo "  - package-lock.json" >> _config.yml
-          echo "_config.yml created."
 
-      - name: Debug generated files
+      # Commit & push
+      - name: Commit built resumes
         run: |
-          echo "Listing root folder after generation:"
-          ls -la
-          echo "Preview of index.html:"
-          head -n 20 index.html || echo "index.html missing"
-          echo "Preview of _config.yml:"
-          cat _config.yml
-
-      - name: Commit built resume
-        run: |
-          echo "Staging files..."
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add index.html _config.yml
-          echo "Git status after staging:"
-          git status
-          echo "Attempting commit..."
-          git commit -m "[ci skip] Update resume HTML" || echo "No changes to commit"
+          git add index.html founder.html tech.html _config.yml
+          git commit -m "[ci skip] Update resumes" || echo "No changes to commit"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
